@@ -57,6 +57,7 @@
 <body>
   <header>🌈 रंगीन लर्निंग एक्टिविटी वेबसाइट</header>
 
+  <!-- CMD Activity -->
   <section id="cmdActivity">
     <h2>💻 CMD कमांड की सही जोड़ी मिलाओ!</h2>
     <div class="board" style="display:flex; justify-content:space-between; gap:20px;">
@@ -77,15 +78,46 @@
     </div>
   </section>
 
+  <!-- Color Puzzle Activity -->
+  <section id="colorActivity">
+    <h2>🎨 रंग पहचानो पज़ल</h2>
+    <p>सही रंग पर क्लिक करो!</p>
+    <div>
+      <div class="colorBox" style="background:red" data-name="लाल"></div>
+      <div class="colorBox" style="background:blue" data-name="नीला"></div>
+      <div class="colorBox" style="background:green" data-name="हरा"></div>
+      <div class="colorBox" style="background:yellow" data-name="पीला"></div>
+      <div class="colorBox" style="background:orange" data-name="नारंगी"></div>
+      <div class="colorBox" style="background:purple" data-name="बैंगनी"></div>
+    </div>
+    <p id="colorResult"></p>
+  </section>
+
+  <!-- Math Activity -->
+  <section id="mathActivity">
+    <h2>🧮 गणित एक्टिविटी</h2>
+    <p>कितने अंकों के सवाल हल करने हैं?</p>
+    <select id="digitSelect">
+      <option value="1">1 अंक</option>
+      <option value="2">2 अंक</option>
+      <option value="3">3 अंक</option>
+    </select>
+    <div id="mathQuestion"></div>
+    <div id="mathOptions"></div>
+    <p id="mathResult"></p>
+  </section>
+
+  <!-- ABCD Voice Activity -->
+  <section id="voiceActivity">
+    <h2>🔤 ABCD वॉइस लर्निंग</h2>
+    <div id="letters"></div>
+  </section>
+
   <script>
+    // CMD Activity
     const leftItems = document.querySelectorAll('#cmdActivity .left');
     const rightItems = document.querySelectorAll('#cmdActivity .right');
     let selectedLeft = null, selectedRight = null;
-
-    function clearSelection() {
-      leftItems.forEach(i => i.classList.remove('wrong'));
-      rightItems.forEach(i => i.classList.remove('wrong'));
-    }
 
     function matchCMD() {
       if (selectedLeft && selectedRight) {
@@ -110,15 +142,85 @@
     }
 
     leftItems.forEach(i => i.addEventListener('click', () => {
-      clearSelection();
       selectedLeft = i;
-      i.classList.add('selected');
     }));
-
     rightItems.forEach(i => i.addEventListener('click', () => {
       selectedRight = i;
       matchCMD();
     }));
+
+    // Color Puzzle
+    const colors = document.querySelectorAll('.colorBox');
+    const colorResult = document.getElementById('colorResult');
+    colors.forEach(c => {
+      c.addEventListener('click', () => {
+        colors.forEach(x => x.classList.remove('selectedColor'));
+        c.classList.add('selectedColor');
+        colorResult.textContent = `यह रंग है: ${c.dataset.name}`;
+      });
+    });
+
+    // Math Activity
+    const digitSelect = document.getElementById('digitSelect');
+    const mathQuestion = document.getElementById('mathQuestion');
+    const mathOptions = document.getElementById('mathOptions');
+    const mathResult = document.getElementById('mathResult');
+    let correctAnswer;
+
+    function generateMathQuestion() {
+      const digits = parseInt(digitSelect.value);
+      const max = Math.pow(10, digits) - 1;
+      const num1 = Math.floor(Math.random() * max);
+      const num2 = Math.floor(Math.random() * max);
+      correctAnswer = num1 + num2;
+      mathQuestion.innerHTML = `<h3>${num1} + ${num2} = ?</h3>`;
+      mathOptions.innerHTML = '';
+      const options = new Set([correctAnswer]);
+      while (options.size < 4) options.add(correctAnswer + Math.floor(Math.random() * 10 - 5));
+      [...options].sort(() => Math.random() - 0.5).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.onclick = () => checkMath(opt);
+        mathOptions.appendChild(btn);
+      });
+    }
+
+    function checkMath(ans) {
+      if (ans === correctAnswer) {
+        mathResult.textContent = '✅ सही जवाब!';
+        mathResult.style.color = 'green';
+        setTimeout(generateMathQuestion, 1000);
+      } else {
+        mathResult.textContent = '❌ गलत! फिर से कोशिश करो।';
+        mathResult.style.color = 'red';
+      }
+    }
+
+    digitSelect.addEventListener('change', generateMathQuestion);
+    generateMathQuestion();
+
+    // ABCD Voice Activity
+    const lettersDiv = document.getElementById('letters');
+    const synth = window.speechSynthesis;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    letters.forEach(l => {
+      const span = document.createElement('span');
+      span.textContent = l;
+      span.style.display = 'inline-block';
+      span.style.margin = '10px';
+      span.style.padding = '15px';
+      span.style.fontSize = '24px';
+      span.style.borderRadius = '10px';
+      span.style.background = 'linear-gradient(90deg,#89f7fe,#66a6ff)';
+      span.style.cursor = 'pointer';
+      span.onclick = () => {
+        const utter = new SpeechSynthesisUtterance(l);
+        synth.speak(utter);
+        span.style.transform = 'scale(1.3)';
+        setTimeout(()=> span.style.transform='scale(1)',500);
+      };
+      lettersDiv.appendChild(span);
+    });
   </script>
 </body>
 </html>
